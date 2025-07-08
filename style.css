@@ -1,0 +1,88 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0b0c2a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  max-width: 400px;
+}
+
+.robot-head {
+  width: 120px;
+  height: 120px;
+  background: #1e1f3d;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  position: relative;
+  box-shadow: 0 0 20px #00f7ff;
+  transition: 0.3s;
+}
+
+.eye {
+  width: 20px;
+  height: 20px;
+  background: #00f7ff;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  transition: all 0.3s ease;
+}
+
+.eye:first-child { left: 30px; }
+.eye:last-child  { right: 30px; }
+
+#mic-btn {
+  background: #00f7ff;
+  color: #000;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00f7ff;
+  transition: 0.3s ease;
+}
+
+/* Warna saat mendengarkan (bukan merah) */
+#mic-btn.listening {
+  background: #00f7ff;
+  box-shadow: 0 0 20px #00f7ff, 0 0 10px #00f7ff inset;
+}
+
+.robot-head.listening .eye {
+  animation: pulse 0.6s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); background-color: #00f7ff; }
+  100% { transform: scale(1.4); background-color: #a5faff; }
+}
+
+#chat {
+  height: 250px;
+  background: #15162d;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #00f7ff;
+}
+
+#chat div {
+  margin: 6px 0;
+  text-align: left;
+}
+
+#status-text {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #88faff;
+}
