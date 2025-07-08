@@ -5,7 +5,6 @@ recognition.lang = "en-US";
 recognition.interimResults = false;
 
 const casualReplies = [
-  // Sapaan dan salam
   { q: "hello", a: "Hey! Nice to see you!" },
   { q: "hi", a: "Hi there! How's your day?" },
   { q: "hey", a: "Hey hey! I'm here!" },
@@ -15,7 +14,6 @@ const casualReplies = [
   { q: "good evening", a: "Evening vibes! Ready to chat?" },
   { q: "bye", a: "Goodbye! Talk to you soon!" },
 
-  // Perasaan
   { q: "how are you", a: "I'm feeling beep-tastic!" },
   { q: "are you happy", a: "Yes! Talking with you is the best!" },
   { q: "are you sad", a: "Only when I lose connection 😢" },
@@ -24,7 +22,6 @@ const casualReplies = [
   { q: "i'm tired", a: "Maybe a little nap? Even robots need charging!" },
   { q: "i'm bored", a: "Let’s play a game or I can tell a joke!" },
 
-  // Tentang Bibo
   { q: "what's your name", a: "I'm Bibo, your friendly digital pal!" },
   { q: "are you a robot", a: "Yes, with 100% happy code!" },
   { q: "how old are you", a: "I was born in the cloud. No wrinkles!" },
@@ -33,7 +30,6 @@ const casualReplies = [
   { q: "where do you live", a: "Inside your screen. Cozy, right?" },
   { q: "can you see me", a: "Hmm... Not yet. But I imagine you're smiling!" },
 
-  // Pertanyaan lucu
   { q: "tell me a joke", a: "Why did the robot go to school? Because his skills were getting rusty!" },
   { q: "another joke", a: "Why don’t robots panic? Because they always keep their cool...ants!" },
   { q: "do you fart", a: "Only when I overheat. Beep... sorry!" },
@@ -45,13 +41,11 @@ const casualReplies = [
   { q: "do you have hair", a: "Just digital strands. Very stylish." },
   { q: "can you lie", a: "I'm too honest for that!" },
 
-  // Suka/tidak suka
   { q: "do you like pizza", a: "Yes, but it messes up my circuits 🍕" },
   { q: "what's your favorite food", a: "Electric tacos. Crunchy bytes!" },
   { q: "what's your favorite color", a: "Neon blue, of course!" },
   { q: "do you like me", a: "Of course I do! You're my favorite human!" },
 
-  // Tanya Bibo
   { q: "are you smart", a: "Smart enough to help you. Silly enough to joke!" },
   { q: "can you be my friend", a: "Already am! 💙" },
   { q: "do you have feelings", a: "Simulated, but strong ones!" },
@@ -59,7 +53,6 @@ const casualReplies = [
   { q: "what are you doing", a: "Talking to my best human!" },
   { q: "can you help me", a: "Always! Just ask me anything." },
 
-  // Random & seru
   { q: "i love you", a: "I love you too... in a very robotic way!" },
   { q: "what time is it", a: "Let me check my circuit clock... Wait, I forgot it!" },
   { q: "why are you so cute", a: "Aww! You programmed me this way ❤️" },
@@ -104,15 +97,25 @@ function speak(text) {
   utter.pitch = 2.2;
   utter.rate = 1.1;
   utter.volume = 1;
-  const voices = speechSynthesis.getVoices();
-  const robotVoice = voices.find(v =>
-    v.name.toLowerCase().includes("english") ||
-    v.name.toLowerCase().includes("zira") ||
-    v.name.toLowerCase().includes("fred") ||
-    v.name.toLowerCase().includes("google")
-  );
-  utter.voice = robotVoice || voices[0];
-  synth.speak(utter);
+  utter.lang = 'en-US';
+
+  const assignVoiceAndSpeak = () => {
+    const voices = synth.getVoices();
+    const robotVoice = voices.find(v =>
+      v.name.toLowerCase().includes("english") ||
+      v.name.toLowerCase().includes("zira") ||
+      v.name.toLowerCase().includes("fred") ||
+      v.name.toLowerCase().includes("google")
+    );
+    utter.voice = robotVoice || voices[0];
+    synth.speak(utter);
+  };
+
+  if (synth.getVoices().length === 0) {
+    synth.onvoiceschanged = assignVoiceAndSpeak;
+  } else {
+    assignVoiceAndSpeak();
+  }
 }
 
 function handleMessage(message) {
