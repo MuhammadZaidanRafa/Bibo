@@ -59,11 +59,14 @@ body {
 
 .robot-head.listening .eye {
   animation: pulse 0.6s infinite alternate;
+  background-color: #ffeb3b !important; /* 👁️ Mata berubah jadi kuning saat mendengarkan */
 }
 
+/* 👁️ Jika ingin efek warna lain, bisa diganti misalnya #00ff00 (hijau) atau #ff4081 (pink) */
+
 @keyframes pulse {
-  0% { transform: scale(1); background-color: #00f7ff; }
-  100% { transform: scale(1.4); background-color: #a5faff; }
+  0% { transform: scale(1); background-color: #ffeb3b; }
+  100% { transform: scale(1.4); background-color: #fff176; }
 }
 
 #chat {
