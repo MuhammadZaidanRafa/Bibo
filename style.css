@@ -7,7 +7,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
   height: 100vh;
 }
 
@@ -24,6 +23,7 @@ body {
   margin: 0 auto 20px;
   position: relative;
   box-shadow: 0 0 20px #00f7ff;
+  transition: 0.3s;
 }
 
 .eye {
@@ -33,6 +33,7 @@ body {
   border-radius: 50%;
   position: absolute;
   top: 40px;
+  transition: all 0.3s ease;
 }
 
 .eye:first-child { left: 30px; }
@@ -50,6 +51,7 @@ body {
   transition: 0.3s ease;
 }
 
+/* Warna saat mendengarkan (bukan merah) */
 #mic-btn.listening {
   background: #00f7ff;
   box-shadow: 0 0 20px #00f7ff, 0 0 10px #00f7ff inset;
@@ -57,11 +59,14 @@ body {
 
 .robot-head.listening .eye {
   animation: pulse 0.6s infinite alternate;
+  background-color: #ffeb3b !important; /* 👁️ Mata berubah jadi kuning saat mendengarkan */
 }
 
+/* 👁️ Jika ingin efek warna lain, bisa diganti misalnya #00ff00 (hijau) atau #ff4081 (pink) */
+
 @keyframes pulse {
-  0% { transform: scale(1); background-color: #00f7ff; }
-  100% { transform: scale(1.4); background-color: #a5faff; }
+  0% { transform: scale(1); background-color: #ffeb3b; }
+  100% { transform: scale(1.4); background-color: #fff176; }
 }
 
 #chat {
@@ -72,34 +77,15 @@ body {
   border-radius: 8px;
   margin-bottom: 15px;
   border: 1px solid #00f7ff;
-  font-size: 14px;
-  text-align: left;
 }
 
 #chat div {
   margin: 6px 0;
+  text-align: left;
 }
 
 #status-text {
+  margin-top: 10px;
   font-size: 14px;
   color: #88faff;
-}
-
-.footer {
-  margin-top: 25px;
-  font-size: 13px;
-  color: #00f7ff;
-  text-align: center;
-  opacity: 0.9;
-  text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff, 0 0 15px #00f7ff;
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff;
-  }
-  to {
-    text-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff, 0 0 30px #00f7ff;
-  }
 }
