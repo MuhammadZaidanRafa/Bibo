@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bibo - AI Robot</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Bibo - AI Robot Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -12,98 +12,11 @@
       <div class="eye"></div>
       <div class="eye"></div>
     </div>
-    <div id="chat"></div>
+    <div id="chat" class="chat-box"></div>
     <button id="mic-btn" onclick="startListening()">🎤 Talk to Bibo</button>
-    <div id="status-text">Tap the button and ask me anything!</div>
+    <div id="status-text">Tap the button and say something!</div>
   </div>
 
-  <div class="footer">Made by Rafa</div>
-
-  <script>
-    const chat = document.getElementById("chat");
-    const synth = window.speechSynthesis;
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-
-    function startListening() {
-      const micBtn = document.getElementById("mic-btn");
-      const status = document.getElementById("status-text");
-      const head = document.querySelector(".robot-head");
-
-      micBtn.classList.add("listening");
-      head.classList.add("listening");
-      status.textContent = "🎧 Listening...";
-
-      recognition.start();
-    }
-
-    recognition.onresult = function (event) {
-      const text = event.results[0][0].transcript.toLowerCase();
-      addMessage("You", text);
-      askAI(text);
-    };
-
-    recognition.onend = function () {
-      document.getElementById("mic-btn").classList.remove("listening");
-      document.querySelector(".robot-head").classList.remove("listening");
-      document.getElementById("status-text").textContent = "Tap the button and ask me anything!";
-    };
-
-    function addMessage(sender, message) {
-      chat.innerHTML += `<div><b>${sender}:</b> ${message}</div>`;
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function speakBibo(text) {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.pitch = 2.6;
-      utter.rate = 1.7;
-      utter.volume = 1;
-      utter.lang = 'en-US';
-
-      const speakNow = () => {
-        const voices = synth.getVoices();
-        utter.voice = voices.find(v => v.lang.includes('en')) || voices[0];
-        synth.speak(utter);
-      };
-
-      if (synth.getVoices().length === 0) {
-        synth.onvoiceschanged = speakNow;
-      } else {
-        speakNow();
-      }
-    }
-
-    function askAI(message) {
-      fetch("https://api.pawan.krd/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer pawan-tryitfree"
-        },
-        body: JSON.stringify({
-          model: "pai-001-light",
-          messages: [
-            { role: "system", content: "You are Bibo, a cute AI robot that talks like a Minion. Be funny and helpful." },
-            { role: "user", content: message }
-          ]
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const reply = data.choices?.[0]?.message?.content || "Hmm... Bibo not sure!";
-        replyBibo(reply);
-      })
-      .catch(() => {
-        replyBibo("Oops! Bibo can't reach the cloud. Maybe banana stuck?");
-      });
-    }
-
-    function replyBibo(text) {
-      addMessage("Bibo", text);
-      speakBibo(text);
-    }
-  </script>
+  <script src="bot.js"></script>
 </body>
 </html>
