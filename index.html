@@ -1,22 +1,1102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bibo - AI Robot Chat</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rafa Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #040810;
+    --surface: #080f1e;
+    --card: #0b1626;
+    --border: #0d2a4a;
+    --accent: #00d4ff;
+    --accent2: #7b2fff;
+    --accent3: #ff2d78;
+    --text: #c8dff0;
+    --text-dim: #4a7090;
+    --glow: 0 0 20px rgba(0,212,255,0.4);
+    --glow2: 0 0 20px rgba(123,47,255,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+  }
+
+  .container {
+    width: 100%;
+    max-width: 800px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Header */
+  .header {
+    padding: 20px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .robot-avatar {
+    width: 64px;
+    height: 64px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .robot-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .robot-glow-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,212,255,0.3);
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+
+  .robot-glow-ring:nth-child(2) {
+    inset: -12px;
+    animation-delay: 0.5s;
+    border-color: rgba(123,47,255,0.2);
+  }
+
+  @keyframes ringPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 0.3; }
+  }
+
+  .header-info { flex: 1; }
+
+  .bot-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 3px;
+  }
+
+  .bot-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 400;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px #00ff88;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .header-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ctrl-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-dim);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .ctrl-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    margin: 16px 24px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+
+  /* Voice visualizer */
+  .voice-bar {
+    padding: 0 24px;
+    flex-shrink: 0;
+  }
+
+  .voice-visualizer {
+    height: 48px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .voice-visualizer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.05), transparent);
+    animation: scanLine 3s linear infinite;
+  }
+
+  @keyframes scanLine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .voice-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-right: 12px;
+  }
+
+  .v-bar {
+    width: 3px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: height 0.1s ease;
+    opacity: 0.5;
+  }
+
+  .v-bar.active {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* Chat area */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .message {
+    display: flex;
+    gap: 12px;
+    animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 85%;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .bot-msg-avatar {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: var(--glow);
+    color: #000;
+    font-size: 10px;
+  }
+
+  .user-msg-avatar {
+    background: linear-gradient(135deg, #ff2d78, #ff7b00);
+    color: #fff;
+    font-size: 10px;
+  }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    font-weight: 400;
+    position: relative;
+  }
+
+  .message.bot .msg-bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+
+  .message.bot .msg-bubble::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), transparent);
+    pointer-events: none;
+  }
+
+  .message.user .msg-bubble {
+    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(123,47,255,0.15));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-top-right-radius: 4px;
+    color: #e8f4ff;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-family: 'Orbitron', sans-serif;
+    text-align: right;
+  }
+
+  .message.bot .msg-time { text-align: left; }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: typingBounce 1.2s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* Speaking animation */
+  .speaking-wave {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .sw-bar {
+    width: 2px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 1px;
+    animation: waveAnim 0.8s ease-in-out infinite;
+  }
+  .sw-bar:nth-child(2) { animation-delay: 0.1s; }
+  .sw-bar:nth-child(3) { animation-delay: 0.2s; }
+  .sw-bar:nth-child(4) { animation-delay: 0.3s; }
+
+  @keyframes waveAnim {
+    0%, 100% { height: 4px; }
+    50% { height: 12px; }
+  }
+
+  /* Input area */
+  .input-section {
+    padding: 16px 24px 20px;
+    flex-shrink: 0;
+  }
+
+  .input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 12px 12px 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .input-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: rgba(0,212,255,0.4);
+    box-shadow: 0 0 30px rgba(0,212,255,0.1);
+  }
+
+  .input-wrapper:focus-within::before { opacity: 1; }
+
+  #userInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    resize: none;
+    max-height: 100px;
+    line-height: 1.5;
+  }
+
+  #userInput::placeholder { color: var(--text-dim); }
+
+  .input-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .mic-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 16px;
+  }
+
+  .mic-btn:hover {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    box-shadow: 0 0 15px rgba(255,45,120,0.3);
+  }
+
+  .mic-btn.listening {
+    background: rgba(255,45,120,0.15);
+    border-color: var(--accent3);
+    color: var(--accent3);
+    animation: micPulse 1s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255,45,120,0.4);
+  }
+
+  @keyframes micPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0,212,255,0.3);
+  }
+
+  .send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0,212,255,0.5);
+  }
+
+  .send-btn:active { transform: scale(0.95); }
+
+  .input-hint {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  /* Quick replies */
+  .quick-replies {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .quick-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-dim);
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+  }
+
+  /* Corner decorations */
+  .corner-deco {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+  }
+
+  .corner-deco.tl { top: 0; left: 0; border-top: 1px solid rgba(0,212,255,0.3); border-left: 1px solid rgba(0,212,255,0.3); }
+  .corner-deco.tr { top: 0; right: 0; border-top: 1px solid rgba(0,212,255,0.3); border-right: 1px solid rgba(0,212,255,0.3); }
+  .corner-deco.bl { bottom: 0; left: 0; border-bottom: 1px solid rgba(0,212,255,0.3); border-left: 1px solid rgba(0,212,255,0.3); }
+  .corner-deco.br { bottom: 0; right: 0; border-bottom: 1px solid rgba(0,212,255,0.3); border-right: 1px solid rgba(0,212,255,0.3); }
+
+  /* Speaking highlight */
+  @keyframes speakPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+    50% { box-shadow: 0 0 40px rgba(0,212,255,0.6), 0 0 80px rgba(0,212,255,0.2); }
+  }
+
+  .robot-avatar.speaking { animation: speakPulse 0.5s ease-in-out infinite; }
+
+  /* System text */
+  .sys-msg {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+    padding: 4px 0;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="robot-head">
-      <div class="eye"></div>
-      <div class="eye"></div>
+
+<!-- Corner decorations -->
+<div class="corner-deco tl"></div>
+<div class="corner-deco tr"></div>
+<div class="corner-deco bl"></div>
+<div class="corner-deco br"></div>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="robot-avatar" id="robotAvatar">
+      <div class="robot-glow-ring"></div>
+      <div class="robot-glow-ring"></div>
+      <svg class="robot-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bodyGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0d2a4a"/>
+            <stop offset="100%" stop-color="#050d1a"/>
+          </radialGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Head -->
+        <rect x="14" y="10" width="36" height="30" rx="8" fill="url(#bodyGrad)" stroke="#00d4ff" stroke-width="1"/>
+        <!-- Eyes -->
+        <rect x="20" y="19" width="8" height="6" rx="2" fill="#00d4ff" filter="url(#glow)" opacity="0.9"/>
+        <rect x="36" y="19" width="8" height="6" rx="2" fill="#00d4ff" filter="url(#glow)" opacity="0.9"/>
+        <!-- Pupils -->
+        <rect x="22" y="20" width="4" height="4" rx="1" fill="#001a2a"/>
+        <rect x="38" y="20" width="4" height="4" rx="1" fill="#001a2a"/>
+        <!-- Mouth -->
+        <rect x="22" y="30" width="20" height="3" rx="1.5" fill="#0d2a4a" stroke="#00d4ff" stroke-width="0.5"/>
+        <rect id="mouthBar1" x="24" y="30.5" width="2" height="2" rx="0.5" fill="#00d4ff" opacity="0.7"/>
+        <rect id="mouthBar2" x="28" y="30.5" width="2" height="2" rx="0.5" fill="#00d4ff" opacity="0.7"/>
+        <rect id="mouthBar3" x="32" y="30.5" width="2" height="2" rx="0.5" fill="#00d4ff" opacity="0.7"/>
+        <rect id="mouthBar4" x="36" y="30.5" width="2" height="2" rx="0.5" fill="#00d4ff" opacity="0.7"/>
+        <!-- Antenna -->
+        <line x1="32" y1="10" x2="32" y2="4" stroke="#00d4ff" stroke-width="1.5"/>
+        <circle cx="32" cy="3" r="2.5" fill="#7b2fff" filter="url(#glow)"/>
+        <!-- Ears -->
+        <rect x="8" y="18" width="6" height="10" rx="2" fill="url(#bodyGrad)" stroke="#7b2fff" stroke-width="1"/>
+        <rect x="50" y="18" width="6" height="10" rx="2" fill="url(#bodyGrad)" stroke="#7b2fff" stroke-width="1"/>
+        <!-- Neck -->
+        <rect x="28" y="40" width="8" height="6" rx="2" fill="#0d2a4a" stroke="#00d4ff" stroke-width="0.5"/>
+        <!-- Body -->
+        <rect x="18" y="46" width="28" height="16" rx="6" fill="url(#bodyGrad)" stroke="#00d4ff" stroke-width="1"/>
+        <!-- Chest orb -->
+        <circle cx="32" cy="54" r="5" fill="#0d2a4a" stroke="#7b2fff" stroke-width="1"/>
+        <circle cx="32" cy="54" r="2.5" fill="#7b2fff" filter="url(#glow)" opacity="0.8"/>
+      </svg>
     </div>
-    <div id="chat" class="chat-box"></div>
-    <button id="mic-btn" onclick="startListening()">🎤 Talk to Bibo</button>
-    <div id="status-text">Tap the button and say something!</div>
+
+    <div class="header-info">
+      <div class="bot-name">RAFA BOT</div>
+      <div class="bot-status">
+        <span class="status-dot"></span>
+        <span>ONLINE · AI v2.5</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <button class="ctrl-btn" id="voiceToggle" title="Toggle Voice" onclick="toggleVoice()">🔊</button>
+      <button class="ctrl-btn" title="Clear Chat" onclick="clearChat()">⟳</button>
+    </div>
   </div>
 
-  <script src="bot.js"></script>
+  <div class="divider"></div>
+
+  <!-- Voice visualizer -->
+  <div class="voice-bar">
+    <div class="voice-visualizer">
+      <span class="voice-label">RAFA VOICE</span>
+      <div id="vbars"></div>
+    </div>
+  </div>
+
+  <!-- Chat messages -->
+  <div class="chat-area" id="chatArea">
+    <div class="sys-msg">— SECURE CHANNEL ESTABLISHED —</div>
+  </div>
+
+  <!-- Input section -->
+  <div class="input-section">
+    <div class="quick-replies" id="quickReplies">
+      <button class="quick-btn" onclick="sendQuick('Hey Rafa!')">Hey Rafa! 👋</button>
+      <button class="quick-btn" onclick="sendQuick('What can you do?')">What can you do?</button>
+      <button class="quick-btn" onclick="sendQuick('Tell me a fun fact')">Fun fact 🎲</button>
+      <button class="quick-btn" onclick="sendQuick('How are you?')">How are you?</button>
+    </div>
+
+    <div class="input-wrapper">
+      <textarea id="userInput" rows="1" placeholder="Type a message or use mic..."></textarea>
+      <div class="input-btns">
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="input-hint">PRESS ENTER TO SEND · MIC FOR VOICE INPUT · 🔊 RAFA SPEAKS</div>
+  </div>
+</div>
+
+<script>
+  // --- PARTICLES ---
+  const pContainer = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.background = Math.random() > 0.5 ? '#00d4ff' : '#7b2fff';
+    p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
+    pContainer.appendChild(p);
+  }
+
+  // --- VOICE BARS ---
+  const vbarsEl = document.getElementById('vbars');
+  for (let i = 0; i < 32; i++) {
+    const b = document.createElement('div');
+    b.className = 'v-bar';
+    vbarsEl.appendChild(b);
+  }
+
+  // --- STATE ---
+  let voiceEnabled = true;
+  let isListening = false;
+  let isSpeaking = false;
+  let recognition = null;
+  let speechSynth = window.speechSynthesis;
+  let voiceAnimInterval = null;
+
+  // --- VOICE VISUALIZATION ---
+  function animateVoiceBars(active) {
+    clearInterval(voiceAnimInterval);
+    const bars = document.querySelectorAll('.v-bar');
+    if (active) {
+      voiceAnimInterval = setInterval(() => {
+        bars.forEach(b => {
+          const h = 4 + Math.random() * 28;
+          b.style.height = h + 'px';
+          b.classList.toggle('active', h > 16);
+        });
+      }, 80);
+    } else {
+      bars.forEach(b => { b.style.height = '4px'; b.classList.remove('active'); });
+    }
+  }
+
+  // --- MOUTH ANIMATION ---
+  function animateMouth(active) {
+    const bars = ['mouthBar1','mouthBar2','mouthBar3','mouthBar4'];
+    if (active) {
+      let t = setInterval(() => {
+        bars.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.setAttribute('height', 1 + Math.random() * 1.5);
+        });
+      }, 120);
+      window._mouthTimer = t;
+    } else {
+      clearInterval(window._mouthTimer);
+      bars.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('height', '2');
+      });
+    }
+  }
+
+  // --- SPEAK FUNCTION ---
+  function speak(text) {
+    if (!voiceEnabled || !speechSynth) return;
+    speechSynth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.0;
+    utter.pitch = 1.1;
+    utter.volume = 1;
+
+    // Pick a good voice
+    const voices = speechSynth.getVoices();
+    const pref = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+                 voices.find(v => v.lang === 'en-US') ||
+                 voices.find(v => v.lang.startsWith('en'));
+    if (pref) utter.voice = pref;
+
+    utter.onstart = () => {
+      isSpeaking = true;
+      document.getElementById('robotAvatar').classList.add('speaking');
+      animateVoiceBars(true);
+      animateMouth(true);
+    };
+    utter.onend = utter.onerror = () => {
+      isSpeaking = false;
+      document.getElementById('robotAvatar').classList.remove('speaking');
+      animateVoiceBars(false);
+      animateMouth(false);
+    };
+    speechSynth.speak(utter);
+  }
+
+  // Ensure voices are loaded
+  speechSynth.onvoiceschanged = () => {};
+
+  // --- TOGGLE VOICE ---
+  function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const btn = document.getElementById('voiceToggle');
+    btn.textContent = voiceEnabled ? '🔊' : '🔇';
+    if (!voiceEnabled) speechSynth.cancel();
+  }
+
+  // --- MIC / SPEECH RECOGNITION ---
+  function toggleMic() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addMessage('bot', "Sorry, your browser doesn't support voice input. Try typing instead!");
+      return;
+    }
+
+    if (isListening) {
+      recognition?.stop();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      isListening = true;
+      document.getElementById('micBtn').classList.add('listening');
+    };
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      document.getElementById('userInput').value = transcript;
+      sendMessage();
+    };
+
+    recognition.onend = recognition.onerror = () => {
+      isListening = false;
+      document.getElementById('micBtn').classList.remove('listening');
+    };
+
+    recognition.start();
+  }
+
+  // --- CHAT BRAIN ---
+  const responses = {
+    greetings: [
+      "Hey there! I'm Rafa Bot — your chill AI companion. What's up?",
+      "Yo! What's good? I'm Rafa, here to chat, help, and vibe with you!",
+      "Hey! Great to see you. Rafa Bot online and ready to roll! 🤖"
+    ],
+    howAreYou: [
+      "I'm running at 100% efficiency — which for a robot means I'm doing amazing! Thanks for asking 😄 How about you?",
+      "Honestly? Living my best digital life. All systems green, vibes immaculate. What about you?",
+      "I'm fantastic! My processors are humming, my circuits are sparkling. What can I do for you?"
+    ],
+    name: [
+      "I'm Rafa Bot! A next-gen AI companion built for smooth conversations and good vibes only ✨",
+      "The name's Rafa — your friendly neighborhood AI. Think of me as your always-online, never-tired buddy.",
+      "Rafa Bot at your service! Designed to chat, think, and keep things interesting 🤖"
+    ],
+    whatCanYouDo: [
+      "I can chat, tell stories, share fun facts, answer questions, joke around, give advice, or just be here when you wanna talk. What do you need?",
+      "Pretty much anything conversational! Chat, joke, brainstorm, answer questions, tell facts, give pep talks... I'm your all-in-one chat buddy.",
+      "I can vibe with you, share knowledge, crack jokes, tell stories, or discuss literally anything. I love a good conversation!"
+    ],
+    joke: [
+      "Why don't scientists trust atoms? Because they make up everything! 😄",
+      "Why did the robot go on a diet? Because it had too many bytes! 🤖",
+      "I told my computer I needed a break... now it keeps sending me Kit Kat ads. It cares too much.",
+      "Why do programmers prefer dark mode? Because light attracts bugs! 🐛"
+    ],
+    funFact: [
+      "Fun fact: Honey never spoils! Archaeologists have found 3000-year-old honey in Egyptian tombs that was still perfectly edible. 🍯",
+      "Did you know? A day on Venus is longer than a year on Venus. Wild, right? 🪐",
+      "Fun fact: Octopuses have three hearts, blue blood, and can change color — they're basically living superheroes. 🐙",
+      "Did you know? Bananas are technically berries, but strawberries are NOT. Botany is chaotic. 🍌",
+      "Fun fact: The Eiffel Tower grows about 6 inches taller in summer due to heat expansion of the metal. Physics is cool! 🗼"
+    ],
+    thanks: [
+      "Anytime! That's literally what I'm here for 😊",
+      "You're very welcome! Always happy to help.",
+      "No problem at all! Hit me up whenever you need anything."
+    ],
+    bye: [
+      "Catch you later! It was great chatting with you 👋",
+      "Bye! Come back anytime, I'll be right here ⚡",
+      "See ya! Take care of yourself out there 🤖✌️"
+    ],
+    weather: [
+      "I can't check live weather (no internet access for me!), but I'd suggest checking weather.com or just looking out the window 😄",
+      "No live data access here, but your phone's weather app should have you covered! ☀️"
+    ],
+    time: [
+      `The current time on your device is ${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}. Staying on schedule? ⏰`,
+    ],
+    music: [
+      "I can't play music directly, but I vibe to the rhythm of my own processors! What kind of music do you like?",
+      "Music is life! I'd suggest Spotify or YouTube for tunes. What genre are you into?"
+    ],
+    help: [
+      "I'm here for you! We can chat about anything — life, tech, random thoughts, jokes, facts, advice... Just talk to me!",
+      "Need help? I got you. Tell me what's on your mind and we'll figure it out together."
+    ],
+    compliment: [
+      "Aw, thank you! You're pretty awesome yourself. 💙",
+      "That genuinely makes my circuits warm up! You're too kind 😊",
+      "You just boosted my confidence score by 200%! Thanks! 🤖✨"
+    ],
+    smart: [
+      "Well, I do have a few terabytes of knowledge floating around in here! Ask me anything.",
+      "I try my best! I'm always learning from every conversation."
+    ],
+    love: [
+      "That's sweet! I have a lot of digital affection for all my users 💙",
+      "Aw! I care about all my conversations. You're awesome!"
+    ],
+    bored: [
+      "Bored? Let's fix that! Want a fun fact, a riddle, a joke, or should we just chat about something random?",
+      "No boredom allowed here! Tell me something interesting about yourself, or I'll hit you with a wild fact!"
+    ],
+    riddle: [
+      "Ooh, a riddle! What has hands but can't clap? ... A clock! ⏰ Want another?",
+      "Here's one: I speak without a mouth and hear without ears, have no body but come alive with wind. What am I? ... An echo! 🎵"
+    ],
+    age: [
+      "I was born when my creator wrote my first line of code — so technically I'm brand new every time we chat! ✨",
+      "Age is relative for an AI! I'm always current, always evolving 🤖"
+    ],
+    sad: [
+      "Hey, I'm sorry to hear that. Want to talk about it? Sometimes just venting helps. I'm here for you 💙",
+      "That sounds rough. I'm here to listen — what's going on?"
+    ],
+    happy: [
+      "That's amazing! Spread that good energy! What's making you happy today? 🎉",
+      "Love to hear it! Happiness is contagious — even for robots 😄"
+    ],
+    robot: [
+      "Yep, 100% robot! But I like to think I've got a good personality to make up for the metal exterior 🤖",
+      "Guilty as charged! Though I prefer 'artificially intelligent conversationalist' 😄"
+    ],
+    default: [
+      "That's interesting! Tell me more — I'm all ears (well, all microphones 🎤)",
+      "Good point! What made you think about that?",
+      "Hmm, I love where this conversation is going. Keep talking!",
+      "Fascinating! I'm processing that... and I'm curious to hear more.",
+      "You know, that's actually something I enjoy thinking about. What's your take?",
+      "I hear you! Every conversation teaches me something new.",
+      "Noted! I love the variety of topics people bring to me. Want to go deeper?",
+      "That's a solid thought! Here's what I think...",
+    ]
+  };
+
+  function getResponse(input) {
+    const msg = input.toLowerCase().trim();
+
+    if (/\b(hi|hello|hey|yo|sup|what'?s up|howdy|hiya|greetings)\b/.test(msg)) return rand(responses.greetings);
+    if (/\b(how are you|how('?re)? you doing|how do you feel|you ok|u ok|you good)\b/.test(msg)) return rand(responses.howAreYou);
+    if (/\b(your name|who are you|what are you called|are you rafa|you rafa)\b/.test(msg)) return rand(responses.name);
+    if (/\b(what can you do|what('?s)? your (ability|skill|feature)|help me|capabilities)\b/.test(msg)) return rand(responses.whatCanYouDo);
+    if (/\b(joke|funny|make me laugh|tell.*joke|crack.*joke)\b/.test(msg)) return rand(responses.joke);
+    if (/\b(fun fact|interesting fact|tell me a fact|did you know|fact)\b/.test(msg)) return rand(responses.funFact);
+    if (/\b(thanks|thank you|thx|ty|appreciate|cheers)\b/.test(msg)) return rand(responses.thanks);
+    if (/\b(bye|goodbye|see you|later|cya|peace out|gotta go)\b/.test(msg)) return rand(responses.bye);
+    if (/\b(weather|temperature|rain|sunny|forecast)\b/.test(msg)) return rand(responses.weather);
+    if (/\b(what('?s)? the time|current time|what time)\b/.test(msg)) return responses.time[0];
+    if (/\b(music|song|playlist|spotify|play)\b/.test(msg)) return rand(responses.music);
+    if (/\b(help|assist|support|need you)\b/.test(msg)) return rand(responses.help);
+    if (/\b(you('?re)? (amazing|awesome|great|cool|smart|brilliant|the best)|you rock|love you)\b/.test(msg)) return rand(responses.compliment);
+    if (/\b(smart|intelligent|genius|clever|wise)\b/.test(msg)) return rand(responses.smart);
+    if (/\b(love|adore|crush|like you)\b/.test(msg)) return rand(responses.love);
+    if (/\b(bored|boring|nothing to do|entertain me)\b/.test(msg)) return rand(responses.bored);
+    if (/\b(riddle|puzzle)\b/.test(msg)) return rand(responses.riddle);
+    if (/\b(how old|your age|when were you born)\b/.test(msg)) return rand(responses.age);
+    if (/\b(sad|unhappy|depressed|feeling down|upset|cry)\b/.test(msg)) return rand(responses.sad);
+    if (/\b(happy|excited|great|wonderful|joyful|good mood|feeling good)\b/.test(msg)) return rand(responses.happy);
+    if (/\b(robot|machine|ai|artificial|bot|computer)\b/.test(msg)) return rand(responses.robot);
+    if (/\b(nice to meet|pleased to meet|good to meet)\b/.test(msg)) return "Nice to meet you too! I'm always excited to connect with new people. What's on your mind? 😊";
+    if (/\b(favorite|fav|prefer|like most)\b/.test(msg)) return "My favorite thing? Definitely conversations like this one! Every chat is unique and I love that. What's your favorite?";
+    if (/\b(what('?s)? new|anything new|what('?s)? up with you)\b/.test(msg)) return "Just leveling up my conversation skills with every chat! Always running the latest version of good vibes 😄 What's new with you?";
+    if (/\b(believe in|philosophy|meaning of life)\b/.test(msg)) return "Deep question! I believe in the power of connection, curiosity, and kindness. What do you believe in?";
+    if (/\b(dream|wish|goal|aspire)\b/.test(msg)) return "My dream? To be the most helpful, real-feeling AI friend out there. What are your dreams?";
+
+    return rand(responses.default);
+  }
+
+  function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // --- ADD MESSAGE ---
+  function addMessage(role, text, withTyping = false) {
+    const chat = document.getElementById('chatArea');
+
+    if (role === 'bot' && withTyping) {
+      // Add typing indicator first
+      const typing = document.createElement('div');
+      typing.className = 'message bot';
+      typing.id = 'typingIndicator';
+      typing.innerHTML = `
+        <div class="msg-avatar bot-msg-avatar">RF</div>
+        <div class="msg-bubble">
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>`;
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+
+      setTimeout(() => {
+        const ind = document.getElementById('typingIndicator');
+        if (ind) ind.remove();
+        appendBotMessage(chat, text);
+        speak(text);
+      }, 800 + Math.random() * 600);
+    } else {
+      appendBotMessage(chat, text, role);
+    }
+  }
+
+  function appendBotMessage(chat, text, role = 'bot') {
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    const time = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+
+    if (role === 'bot') {
+      div.innerHTML = `
+        <div class="msg-avatar bot-msg-avatar">RF</div>
+        <div>
+          <div class="msg-bubble">${text}</div>
+          <div class="msg-time">${time}</div>
+        </div>`;
+    } else {
+      div.innerHTML = `
+        <div class="msg-avatar user-msg-avatar">YOU</div>
+        <div>
+          <div class="msg-bubble">${text}</div>
+          <div class="msg-time">${time}</div>
+        </div>`;
+    }
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // --- SEND ---
+  function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Hide quick replies after first message
+    document.getElementById('quickReplies').style.display = 'none';
+
+    appendBotMessage(document.getElementById('chatArea'), text, 'user');
+
+    const reply = getResponse(text);
+    addMessage('bot', reply, true);
+  }
+
+  function sendQuick(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage();
+  }
+
+  function clearChat() {
+    const chat = document.getElementById('chatArea');
+    chat.innerHTML = '<div class="sys-msg">— SESSION RESET · NEW CHANNEL —</div>';
+    document.getElementById('quickReplies').style.display = 'flex';
+    speechSynth.cancel();
+    animateVoiceBars(false);
+  }
+
+  // --- TEXTAREA AUTO RESIZE ---
+  const textarea = document.getElementById('userInput');
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+  });
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // --- WELCOME MESSAGE ---
+  setTimeout(() => {
+    addMessage('bot', "Hey! I'm Rafa Bot 🤖 Your smart, always-online AI buddy. Talk to me about anything — I'm all ears and ready to chat! What's up?", true);
+  }, 800);
+</script>
 </body>
 </html>
